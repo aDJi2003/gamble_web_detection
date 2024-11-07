@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import psycopg2
+import re
 
 import nltk
 nltk.download('stopwords')
@@ -8,7 +9,7 @@ nltk.download('punkt_tab')
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
-gambling_keywords = ['casino', 'bet', 'jackpot', 'poker', 'slot', 'roulette', 'blackjack', 'gambling', 'sportsbook']
+gambling_keywords_pattern = re.compile(r'\b(casino|bet(?:ting)?|jackpot(?:ting)?|poker|slot(?:s)?|roulette|blackjack|gambling|sportsbook(?:s)?)\b', re.IGNORECASE)
 
 stop_words = set(stopwords.words('english'))
 
@@ -65,7 +66,9 @@ def clean_text(text):
 
 def detect_gambling_content(text):
     words = clean_text(text)
-    detected_words = {word for word in words if word in gambling_keywords}
+    joined_text = ' '.join(words)
+    detected_words = set(re.findall(gambling_keywords_pattern, joined_text))
+
     return bool(detected_words), detected_words
 
 def analyze_website(url):
